@@ -16,6 +16,7 @@ use tmm::paging::{Address, PhysAddr, VirtAddr};
 
 use crate::STACK_SIZE;
 use crate::declare_module;
+use crate::display::{FramebufferInfo, takeown_framebuffer};
 
 #[used]
 static PHYSICAL_MEMORY_OFFSET_REQUEST: HhdmRequest = HhdmRequest::new();
@@ -169,6 +170,13 @@ pub unsafe fn read_limine_mp_info() -> &'static [&'static Cpu] {
     mp_info.cpus()
 }
 
+/// Returns the framebuffer information owned by the kernel.
+pub fn framebuffer_info() -> Option<&'static FramebufferInfo> {
+    FRAMEBUFFER_OWNED.get()
+}
+
+static FRAMEBUFFER_OWNED: Once<FramebufferInfo> = Once::new();
+
 /// Copies the kernel ELF and multiprocessor information provided by the bootloader into owned memory so that it can be accessed after the kernel is remapped.
 pub fn copy_to_owned_memory() {
     let kernel_elf = unsafe { read_limine_elf() };
@@ -188,6 +196,18 @@ pub fn copy_to_owned_memory() {
         });
     }
     MULTIPROC_INFO.call_once(|| cores);
+
+    FRAMEBUFFER_OWNED.call_once(|| unsafe {
+        takeown_framebuffer(
+            &FRAMEBUFFER
+                .get_response()
+                .unwrap()
+                .framebuffers()
+                .next()
+                .unwrap(),
+        )
+        .unwrap()
+    });
 }
 
 declare_module!("requests", init);

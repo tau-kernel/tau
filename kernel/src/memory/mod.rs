@@ -67,6 +67,8 @@ fn init() -> Result<(), Infallible> {
         }
     };
 
+    bootloader::copy_to_owned_memory();
+
     match map_kernel(recursive_idx) {
         Err(e) => {
             panic!("Failed to map kernel: {:?}", e);

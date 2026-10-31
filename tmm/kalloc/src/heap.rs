@@ -281,8 +281,18 @@ where
         return 0;
     }
 
+    if indices.len() == 1 {
+        let index = indices[0];
+        let mid_value = &data[index as usize];
+        if key(index, mid_value) < value {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     let mut low = 0;
-    let mut high = data.len();
+    let mut high = indices.len();
     while low < high {
         let mid = (low + high) / 2;
         let index = indices[mid];
