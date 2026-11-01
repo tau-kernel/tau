@@ -2,7 +2,6 @@ use alloc::alloc::alloc;
 use cake::RwLockUpgradableReadGuard;
 use core::sync::atomic::AtomicUsize;
 use core::{alloc::Layout, arch::naked_asm, hint, sync::atomic::Ordering};
-use x86_64::registers::control::{Cr3, Cr3Flags};
 
 use cake::log::info;
 use cake::{RwLock, limine::mp::Cpu};

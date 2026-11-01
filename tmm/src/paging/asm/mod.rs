@@ -6,8 +6,8 @@ use core::{
 };
 
 use cake::{
-    OnceMutex, OnceMutexGuard, OnceRwLock, OnceRwReadGuard,
-    log::{info, trace},
+    OnceMutex, OnceMutexGuard,
+    log::trace,
 };
 
 use crate::{
@@ -20,7 +20,7 @@ use crate::{
         Address, AddressExt, FragmentSize, Frame, Large, MemoryFragment, Page, PageTable,
         PageTableEntry, PageTableIndex, RecursiveEntryManager, Small,
         accessor::{self},
-        map::{Flush, LocalMemoryMapper, MapperMut, SizedMemoryMapper},
+        map::{LocalMemoryMapper, MapperMut, SizedMemoryMapper},
         recursive::RecursivePageTable,
     },
 };

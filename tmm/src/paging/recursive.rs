@@ -1,20 +1,14 @@
-use core::{fmt::Debug, iter::Map};
+use core::fmt::Debug;
 
-use arrayvec::ArrayVec;
-use cake::log::error;
 
 use crate::{
     MapFlags, MemError,
-    err::MalformedPageStructure,
     mem_err,
     paging::{
-        Address, FragmentManager, FragmentSize, Frame, Large, Medium, MemoryFragment, MemoryRange,
-        Page, PageTable, PageTableEntry, PageTableIndex, Small, VirtAddr,
+        Address, FragmentManager, Frame, Large, Medium, MemoryFragment, PageTable, PageTableEntry, PageTableIndex, Small, VirtAddr,
         accessor::{self, PagetableAccessor, TablePointer},
         map::{Flush, MemoryMapper, SizedMemoryMapper, Unmapped},
-        primitives::{AnyPage, DirectMapping, VirtRange},
-        table,
-        translate::{Translate, TranslateResult},
+        primitives::AnyPage,
     },
 };
 

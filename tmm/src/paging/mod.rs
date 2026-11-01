@@ -21,7 +21,7 @@ use cake::log::trace;
 pub use index::PageTableIndex;
 
 use crate::{
-    ContextualizedError, MapFlags, MapSource, MemError, MemoryMapping, ProvidedMemoryMapping,
+    MapFlags, MapSource, MemError, MemoryMapping, ProvidedMemoryMapping,
     arch::{Mapper, PageEntryType},
     paging::{
         fragment::GreedyFragmentMapper,

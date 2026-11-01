@@ -21,9 +21,8 @@ use core::{
 
 extern crate alloc;
 
-use arrayvec::ArrayVec;
 use bitflags::bitflags;
-use cake::{limine::memory_map, stacktrace::StackTrace};
+use cake::limine::memory_map;
 
 #[doc(hidden)]
 pub use pastey as _pastey;
@@ -33,12 +32,8 @@ use crate::{
     err::Contextualize,
     paging::{
         Address, AddressExt, FragmentManager, FragmentSize, Frame, Large, MemoryFragment, Page,
-        PageTableIndex, PhysAddr, VirtAddr,
-        accessor::CopyMappingError,
-        asm,
-        limine::LimineEntry,
-        operation::OperationAllSizes,
-        primitives::{AnyFragment, MemoryRange, PageClass, PhysRange, VirtRange},
+        PageTableIndex, PhysAddr, VirtAddr, asm, limine::LimineEntry, operation::OperationAllSizes,
+        primitives::MemoryRange,
     },
 };
 

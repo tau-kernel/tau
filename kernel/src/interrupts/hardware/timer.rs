@@ -7,7 +7,7 @@ use super::InterruptIndex;
 /// The frequency of the timer interrupt.
 pub const TIMER_FREQUENCY: f32 = 18.2065; // stolen from https://wiki.osdev.org/Programmable_Interval_Timer
 
-pub(super) extern "C" fn timer_handler(frame: InterruptContext) {
+pub(super) extern "C" fn timer_handler(_frame: InterruptContext) {
     unsafe {
         // sched_next(frame);
 

@@ -6,12 +6,10 @@ use arrayvec::ArrayVec;
 use cake::Once;
 use cake::limine::BaseRevision;
 use cake::limine::memory_map::Entry;
-use cake::limine::mp::{Cpu, GotoAddress};
-use cake::limine::{paging::Mode, request::*, response::ExecutableAddressResponse};
-use cake::log::info;
+use cake::limine::mp::Cpu;
+use cake::limine::{paging::Mode, request::*};
 use tmm::MapFlags;
 use tmm::paging::heapless::HeaplessAllocator;
-use tmm::paging::primitives::PhysRange;
 use tmm::paging::{Address, PhysAddr, VirtAddr};
 
 use crate::STACK_SIZE;

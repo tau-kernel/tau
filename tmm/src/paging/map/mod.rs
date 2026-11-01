@@ -8,7 +8,7 @@ use arrayvec::ArrayVec;
 use cake::log::trace;
 
 use crate::{
-    ContextualizedError, MapFlags, MemError,
+    MapFlags, MemError,
     paging::{
         Address, FragmentManager, FragmentSize, Frame, Large, Medium, MemoryFragment, MemoryRange,
         Page, Small, VirtAddr,

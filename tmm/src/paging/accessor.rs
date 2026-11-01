@@ -5,16 +5,15 @@ use cake::trace_disabled;
 
 use crate::{
     MapFlags,
-    MemError::{self},
-    align, arch, mem_err,
+    MemError::{self}, arch, mem_err,
     paging::{
         Address, AddressExt, FragmentManager, FragmentSize, Frame, FullManager, Large, Medium,
         MemoryFragment, MemoryRange, Page, PageTable, PageTableEntry, PageTableIndex, PhysAddr,
         Small, VirtAddr,
         index::PageIndexIter,
         map::{Flush, GlobalMemoryProvider, MemoryMapper, SizedMemoryMapper},
-        primitives::{AnyPage, DirectMapping, FrameClass},
-        translate::{Translate, TranslateResult},
+        primitives::{DirectMapping, FrameClass},
+        translate::Translate,
     },
 };
 

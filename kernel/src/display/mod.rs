@@ -2,8 +2,8 @@
 use core::convert::Infallible;
 
 use cake::{
-    Mutex, OnceMutex,
-    limine::{self, response::FramebufferResponse},
+    OnceMutex,
+    limine::{self},
 };
 use framebuffer::Framebuffer;
 
@@ -15,12 +15,12 @@ pub mod terminal;
 
 pub use character::get_char;
 use tmm::{
-    ContextualizedError, MapFlags, MemoryMapping,
+    ContextualizedError, MapFlags,
     paging::{Address, MemoryRange, PhysAddr},
 };
 
 use crate::{
-    bootloader::{self, physical_memory_offset},
+    bootloader::{self},
     declare_module,
 };
 

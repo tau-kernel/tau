@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use cake::{limine, log::info};
+use cake::log::info;
 
 use crate::display::FramebufferInfo;
 

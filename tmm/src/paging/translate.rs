@@ -6,7 +6,7 @@ use crate::{
     MapFlags, MemError,
     err::MalformedPageStructure,
     paging::{
-        FragmentSize, Frame, MemoryFragment, MemoryRange, Page, PageTableIndex, Small, VirtAddr,
+        Frame, MemoryFragment, MemoryRange, Page, PageTableIndex, VirtAddr,
         accessor::{self, PagetableAccessor},
         primitives::DirectMapping,
     },

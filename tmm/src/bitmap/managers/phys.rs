@@ -6,7 +6,7 @@ use core::{
 
 use cake::{
     limine::memory_map::EntryType,
-    log::{error, info},
+    log::info,
     trace_disabled,
 };
 
@@ -15,7 +15,7 @@ use crate::{
     bitmap::{
         Bitmap, BitmapBacking, VirtualMemoryManager,
         managers::{
-            address_as_bit_index, align_in_bits, alignment_of, bit_index_as_address,
+            address_as_bit_index, align_in_bits, bit_index_as_address,
             entries_for_bytes, n_pages_for_bytes,
         },
     },
@@ -309,7 +309,7 @@ const N_HIGHER_FOR_BUMP: u64 = 12;
 
 impl EntryPlacement {
     fn place(range: MemoryRange<PhysAddr>) -> Self {
-        let base_align = range.start_align();
+        let _base_align = range.start_align();
         let size = range.size();
 
         let (new_base, new_align) = if size > Large::SIZE * N_HIGHER_FOR_BUMP {

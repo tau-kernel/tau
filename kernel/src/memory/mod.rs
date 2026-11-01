@@ -2,8 +2,8 @@ use core::{
     alloc::Layout,
     arch::asm,
     convert::Infallible,
-    mem::{self, Alignment},
-    ptr::{self, addr_of},
+    mem::Alignment,
+    ptr::{self},
 };
 
 use crate::{
@@ -11,11 +11,8 @@ use crate::{
     bootloader::{self},
     declare_module,
 };
-use alloc::{alloc::Allocator, vec::Vec};
-use cake::{
-    log::{info, trace},
-    trace_disabled,
-};
+use alloc::alloc::Allocator;
+use cake::log::{info, trace};
 use kalloc::{GlobalAllocator, HeapConfig};
 use tmm::{
     ContextualizedError, InitConfig, MapFlags, MapSource, MemError,
@@ -155,7 +152,7 @@ fn map_kernel(recursive_idx: PageTableIndex) -> Result<!, MemError> {
 }
 
 unsafe fn init_tmm() -> Result<PageTableIndex, ContextualizedError> {
-    let memory_map = bootloader::memory_map();
+    let _memory_map = bootloader::memory_map();
     let recursive_idx = unsafe { find_set_recursive_entry().unwrap() };
 
     let init = InitConfig::find_scratch_page(

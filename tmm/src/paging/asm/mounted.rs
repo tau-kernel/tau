@@ -1,6 +1,6 @@
 use core::mem;
 
-use cake::log::{error, info};
+use cake::log::error;
 
 use crate::{
     MapFlags, MemError,

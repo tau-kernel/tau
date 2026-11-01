@@ -3,7 +3,7 @@ use core::fmt::Debug;
 use core::{mem, ops, slice};
 
 use arrayvec::ArrayVec;
-use cake::limine::memory_map::{Entry, EntryType};
+use cake::limine::memory_map::EntryType;
 use cake::log::error;
 
 use crate::paging::limine::LimineEntry;

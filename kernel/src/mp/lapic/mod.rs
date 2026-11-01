@@ -15,7 +15,6 @@ use x86_64::registers::model_specific::Msr;
 use crate::mp::lapic::icr::InterruptCommandRegister;
 use crate::mp::lapic::svr::SpuriousInterruptVector;
 
-use crate::mp::apic_page_flags;
 
 pub mod icr;
 pub mod lvt;

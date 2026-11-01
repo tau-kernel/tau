@@ -204,7 +204,7 @@ impl<const SIZE: usize> Cursor<SIZE> {
 
     fn advance(&self, count: usize) -> usize {
         self.0
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |pos| {
+            .try_update(Ordering::AcqRel, Ordering::Acquire, |pos| {
                 Some((pos + count) % SIZE)
             })
             .unwrap()

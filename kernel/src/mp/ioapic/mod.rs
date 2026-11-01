@@ -1,16 +1,15 @@
 //! Various Rust abstractions for IOAPIC support.
 use core::fmt::Debug;
 
-use ::acpi::sdt::madt::{Madt, MadtEntry};
 use cake::log::info;
 use cake::{Once, OnceMutex};
 use modular_bitfield::prelude::*;
 use tmm::MapFlags;
 use tmm::arch::L1_PAGE_SIZE;
-use tmm::paging::primitives::{PhysRange, VirtRange};
+use tmm::paging::primitives::PhysRange;
 use tmm::paging::{Address, AddressExt, PhysAddr};
 
-use crate::mp::{apic_page_flags, id};
+use crate::mp::id;
 
 mod redirection;
 mod version;
@@ -36,7 +35,7 @@ impl IoApic {
 
     /// Initializes the IOAPIC by reading the MADT and mapping the IOAPIC's physical address into the kernel's address space.
     pub fn init(&self) {
-        let madt = todo!("Rewrite ACPI code");
+        let _madt = todo!("Rewrite ACPI code");
         // for entry in madt.table_pin().entries() {
         //     if let MadtEntry::IoApic(i) = entry {
         //         self.base.call_once(|| i.io_apic_address as u64);

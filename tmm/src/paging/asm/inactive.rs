@@ -1,9 +1,9 @@
 use cake::log::error;
 
 use crate::{
-    MapFlags, MemError,
+    MemError,
     paging::{
-        AddressExt, Frame, Large, MemoryFragment, Page, PageTable, PageTableEntry, PageTableIndex,
+        Frame, Large, Page, PageTableIndex,
         RecursiveEntryManager, Small,
         asm::{self, mounted},
     },

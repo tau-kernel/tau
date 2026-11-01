@@ -1,6 +1,5 @@
 use crate::{
     MemError,
-    arch::Mapper,
     mem_err,
     paging::{
         FragmentManager, FragmentSize, Frame, FullManager, Large, Medium, MemoryFragment, PhysAddr,
