@@ -237,7 +237,7 @@ pub fn reserve_virtual(layout: Layout) -> Result<MemoryRange<VirtAddr>, MemError
 /// # Safety
 /// The caller must ensure that the provided virtual address range is not currently mapped to any physical memory and is not in use before freeing it,
 /// as freeing a virtual address range that is still in use can lead to undefined behavior such as use-after-free or memory corruption.
-pub unsafe fn free_virtual(
+pub unsafe fn release_virtual(
     virt_range: MemoryRange<VirtAddr>,
     layout: Layout,
 ) -> Result<(), MemError> {
@@ -256,7 +256,7 @@ pub fn reserve_frame<S: FragmentSize>() -> Result<Frame<S>, MemError> {
 }
 
 /// Frees a physical frame that was previously reserved with `reserve_frame`.
-pub fn free_frame<S: FragmentSize>(frame: Frame<S>) {
+pub fn release_frame<S: FragmentSize>(frame: Frame<S>) {
     let mut pmm = asm::pmm();
 
     pmm.deallocate_fragment(frame);
@@ -330,7 +330,7 @@ pub fn create_phys_mapping(
     )
     .map(|m| m.defer_deallocate_vm(true))
     .map_err(|e| {
-        unsafe { free_virtual(virt_range, make_layout_for_mapping(phys_range)) };
+        unsafe { release_virtual(virt_range, make_layout_for_mapping(phys_range)) };
         e.with_ctx("failed to map memory")
     })
 }
@@ -340,7 +340,7 @@ pub unsafe fn free_phys_mapping(mapping: ProvidedMemoryMapping) -> Result<(), Co
     unsafe {
         unmap(mapping.mapping.virt_range()).with_ctx("failed to unmap memory")?;
         if mapping.anon_virt_backed {
-            free_virtual(
+            release_virtual(
                 mapping.mapping.virt_range(),
                 make_layout_for_mapping(mapping.mapping.phys_range()),
             )

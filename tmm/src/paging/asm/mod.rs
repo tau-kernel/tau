@@ -2,13 +2,10 @@
 
 use core::{
     cell::{Ref, RefCell},
-    mem::{self, transmute},
+    mem::{self, MaybeUninit, transmute},
 };
 
-use cake::{
-    OnceMutex, OnceMutexGuard,
-    log::trace,
-};
+use cake::{OnceMutex, OnceMutexGuard, log::trace};
 
 use crate::{
     MapFlags, MemError,

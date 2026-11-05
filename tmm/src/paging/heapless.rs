@@ -34,7 +34,7 @@ impl HeaplessAllocator {
             crate::reserve_virtual(layout).with_ctx("failed to reserve backing virtual memory")?;
 
         if let Err(e) = crate::map(vbase, MapSource::Anon, self.0, None, &mut ()) {
-            if let Err(e) = unsafe { crate::free_virtual(vbase, layout) } {
+            if let Err(e) = unsafe { crate::release_virtual(vbase, layout) } {
                 error!(
                     "Failed to free virtual memory for heapless allocator: {:?}",
                     e
@@ -58,11 +58,11 @@ impl HeaplessAllocator {
         // SAFETY: Upheld by the caller
         let range = VirtRange::new_len(vbase, layout.size() as u64);
         unsafe { crate::unmap(range) }.map_err(|e| {
-            let _ = unsafe { crate::free_virtual(range, layout) };
+            let _ = unsafe { crate::release_virtual(range, layout) };
             e.with_ctx("failed to unmap memory")
         })?;
 
-        unsafe { crate::free_virtual(range, layout) }
+        unsafe { crate::release_virtual(range, layout) }
             .map_err(|e| e.with_ctx("failed to free underlying virtual memory"))?;
 
         Ok(())

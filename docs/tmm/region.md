@@ -1,0 +1,10 @@
+# Regions: The highest level of virtual memory management in TMM.
+
+## Terms
+
+- `Region`: A contiguous range of virtual memory that is being used for a specific purpose. These should be rather large, and can in fact include the whole address space if you want, without any size limit. 
+- `RegionManager` or `RM`: The object that manages all the regions mapped in the current address space. Each address space has two RMs, one for the higher half (kernel space) and one for the lower half (user space). The RM is responsible for allocating and deallocating regions, as well as keeping track of which regions are currently mapped in the address space. RM will also be responsible for layout randomization. 
+
+## Difference between VirtualMemoryManager and RegionManager
+
+RegionManager is designed to handle much larger quantities of memory than VirtualMemoryManager (VMM). VMM is intended to be fast and efficient for frequent small and medium-sized allocations, and because of this, it uses a bitmap to track which pages are allocated. This is very fast! However, each GiB of virtual memory has a certain amount of overhead associated with it. It is *impossible* with today's hardware (and ram prices, *ugh*) to have a bitmap for the entire virtual address space. This is where RegionManager comes in. It is designed to handle large allocations, and it does so by using a tree structure to track which regions are allocated. This is much more efficient than using a bitmap, and it allows for much larger allocations. Instead of a fixed overhead per GiB, the overhead is proportional to the number of regions allocated. This means that if you have a lot of small allocations, the overhead will be higher, but if you have a few large allocations, the overhead will be much lower. This is why RegionManager is *not* designed as a multipurpose virtual memory allocator. 
