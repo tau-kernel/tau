@@ -398,7 +398,6 @@ mod tests {
             (0x5000, 0x1000, EntryType::BOOTLOADER_RECLAIMABLE),
             (0x6000, 0x1000, EntryType::KERNEL_AND_MODULES),
         ]);
-        let refs: Vec<&LimineEntry> = entries.iter().collect();
         let walker = unsafe { EntryWalker::from_limine_entries(&refs).unwrap() };
         assert_eq!(walker.usable_memory(), 0x4000);
     }
@@ -411,7 +410,6 @@ mod tests {
             (0x3000, 0x1000, EntryType::USABLE),
         ]);
         let refs: Vec<&LimineEntry> = entries.iter().collect();
-        let mut walker = unsafe { EntryWalker::from_limine_entries(&refs).unwrap() };
 
         let frame1: Frame<Small> = walker.allocate_for().unwrap();
         assert_eq!(frame1.start_address().as_u64(), 0x1000);
@@ -430,7 +428,6 @@ mod tests {
             (L2_PAGE_SIZE * 2 + 0x2000, 0x1000, EntryType::USABLE),
         ]);
         let refs: Vec<&LimineEntry> = entries.iter().collect();
-        let mut walker = unsafe { EntryWalker::from_limine_entries(&refs).unwrap() };
 
         let frame1: Frame<Small> = walker.allocate_for().unwrap();
         assert_eq!(frame1.start_address().as_u64(), 0x1000);
@@ -459,7 +456,7 @@ mod tests {
             (0x5000, 0x1000, EntryType::ACPI_RECLAIMABLE),
         ]);
         let refs: Vec<&LimineEntry> = entries.iter().collect();
-        let mut walker = unsafe { EntryWalker::from_limine_entries(&refs).unwrap() };
+
         assert_eq!(
             walker.allocate_for::<Small>(),
             Ok(Frame::from_start_address(PhysAddr::new(0x1000)).unwrap())

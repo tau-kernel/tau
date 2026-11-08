@@ -1,16 +1,6 @@
-use core::{
-    mem::Alignment,
-    ops::{Deref, DerefMut},
-};
+use core::mem::Alignment;
 
-use alloc::vec::Vec;
-use arrayvec::ArrayVec;
-
-use crate::{
-    MapFlags,
-    paging::{heapless::HeaplessAllocator, primitives::VirtRange},
-    region::backing::RegionBacking,
-};
+use crate::{paging::primitives::VirtRange, region::backing::RegionBacking};
 
 mod backing;
 

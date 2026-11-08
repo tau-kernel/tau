@@ -1,6 +1,6 @@
 use core::{
     fmt::Debug,
-    sync::atomic::{AtomicBool, AtomicU8},
+    sync::atomic::AtomicU8,
 };
 
 const FUSE_INTACT: u8 = 0;

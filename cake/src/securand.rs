@@ -4,9 +4,9 @@ use core::hash::{BuildHasher, Hasher};
 
 use arrayvec::ArrayVec;
 use log::{error, info};
-use rand_chacha::{ChaCha12Core, ChaCha20Core, ChaCha20Rng};
-use rand_core::{Rng, SeedableRng, block::Generator};
-use rs_sha512_256::{HasherContext, Sha512_256Hasher, Sha512_256State};
+use rand_chacha::ChaCha20Rng;
+use rand_core::{Rng, SeedableRng};
+use rs_sha512_256::{HasherContext, Sha512_256State};
 use spin::Mutex;
 
 use crate::OnceMutex;

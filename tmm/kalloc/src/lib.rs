@@ -8,22 +8,14 @@
 use core::{
     alloc::{GlobalAlloc, Layout},
     cell::RefCell,
-    cmp::Ordering,
-    mem,
-    ops::Range,
     ptr::NonNull,
-    slice,
 };
 
-use alloc::{
-    alloc::{AllocError, Allocator},
-    vec::Vec,
-};
-use arrayvec::ArrayVec;
+use alloc::alloc::{AllocError, Allocator};
 use tmm::{
-    ContextualizedError, MapFlags, MapSource, MemError, align,
+    ContextualizedError, MemError,
     corelocal::{CoreLocal, NoDefaultInit, no_default_init},
-    paging::{AddressExt, heapless::HeaplessAllocator, primitives::VirtRange},
+    paging::AddressExt,
 };
 
 use crate::heap::Heap;

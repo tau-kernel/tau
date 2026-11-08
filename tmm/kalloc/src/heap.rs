@@ -2,7 +2,7 @@ use core::{alloc::Layout, cmp::Ordering, mem, ptr::NonNull, slice};
 
 use alloc::{alloc::AllocError, vec::Vec};
 use tmm::{
-    ContextualizedError, MapFlags, MapSource, MemError, align,
+    ContextualizedError, MapFlags, MapSource, align,
     err::Contextualize,
     paging::{AddressExt, heapless::HeaplessAllocator, primitives::VirtRange},
 };

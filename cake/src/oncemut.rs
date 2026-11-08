@@ -1,11 +1,10 @@
 use core::{
-    cell::UnsafeCell,
-    panic, ptr,
-    sync::atomic::{AtomicI64, AtomicPtr, AtomicU64, AtomicUsize, Ordering},
+    cell::UnsafeCell, ptr,
+    sync::atomic::{AtomicI64, AtomicPtr, Ordering},
 };
 
-use log::{error, trace};
-use spin::{Mutex, MutexGuard, Once};
+use log::trace;
+use spin::Once;
 
 use crate::stacktrace::{read_caller_frame, sym::resolve_sym};
 

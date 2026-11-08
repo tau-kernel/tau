@@ -20,7 +20,7 @@ pub use vaddr::VirtAddr;
 
 use crate::{
     align,
-    arch::{HIGHER_HALF_START, L1_PAGE_SIZE},
+    arch::L1_PAGE_SIZE,
 };
 
 encapsulate_macro!(

@@ -1,4 +1,3 @@
-use core::pin::pin;
 use core::{
     fmt,
     ops::{Deref, DerefMut},

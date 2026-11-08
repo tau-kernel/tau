@@ -16,6 +16,7 @@ members = [
     "kserial",
     "kserial/kserial_derive",
     "kelp",
+    "tmm",
     "tmm/kalloc",
 ]
 

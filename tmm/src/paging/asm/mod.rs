@@ -2,7 +2,7 @@
 
 use core::{
     cell::{Ref, RefCell},
-    mem::{self, MaybeUninit, transmute},
+    mem::{self, transmute},
 };
 
 use cake::{OnceMutex, OnceMutexGuard, log::trace};

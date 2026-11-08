@@ -1,7 +1,7 @@
 use std::io::{Read, Write};
 
 use rustix::fs::FlockOperation;
-use syn::{Expr, LitStr};
+use syn::LitStr;
 
 pub fn derive_should_trace_target(expr: LitStr) -> proc_macro::TokenStream {
     let log_filters = option_env!("TAU_TRACE_FEATURES")

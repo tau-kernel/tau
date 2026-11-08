@@ -72,7 +72,7 @@ fn build_tests(test_args: Vec<String>) -> (PathBuf, bool) {
         if json["reason"] == "build-finished" {
             if json["success"] == true {
                 let path = last_artifact["executable"].as_str().unwrap();
-                let fresh = last_artifact["fresh"].as_bool().unwrap();
+                let _fresh = last_artifact["fresh"].as_bool().unwrap();
                 // TODO: For some reason, fresh is always false. This is a temporary fix.
                 return (PathBuf::from(path), true);
             }

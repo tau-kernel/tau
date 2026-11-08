@@ -1,9 +1,6 @@
-[tasks.format]
-description = "Format the code using rustfmt"
-command = "cargo fmt --all -- --check"
-dependencies = ["check"]
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
 
-[tasks.check]
-description = "Run cargo check to ensure the code compiles"
-command = "cargo check --all-features"
-dependencies = ["test"]
+[tasks.fix]
+description = "Run `cargo fix` on all crates in the workspace"
+script = "cargo fix ${FIX_ARGS}"
