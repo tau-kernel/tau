@@ -11,5 +11,5 @@
     "python.analysis.extraPaths": [
         "./gdb_scripts/py/lib"
     ],
-    "rust-analyzer.cfg.setTest": false
+    "rust-analyzer.cfg.setTest": true
 }

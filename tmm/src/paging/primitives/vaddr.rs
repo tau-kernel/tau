@@ -19,6 +19,10 @@ impl_ops!(blanket VirtAddr);
 impl VirtAddr {
     /// The start of the higher half in virtual address space.
     pub const HIGHER_HALF_OFFSET: Self = arch::HIGHER_HALF_START;
+    /// The max value for a virtual address on the current platform.
+    pub const MAX: Self = VirtAddr::new_truncate(arch::VIRTUAL_ADDRESS_MAX);
+    /// The min value for a virtual address on the current platform.
+    pub const MIN: Self = VirtAddr::new(0);
 
     /// Returns true if the virtual address is null (0).
     pub const fn is_null(&self) -> bool {

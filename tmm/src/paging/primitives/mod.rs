@@ -18,7 +18,10 @@ pub use paddr::PhysAddr;
 pub use page::Page;
 pub use vaddr::VirtAddr;
 
-use crate::{align, arch::L1_PAGE_SIZE};
+use crate::{
+    align,
+    arch::{HIGHER_HALF_START, L1_PAGE_SIZE},
+};
 
 encapsulate_macro!(
     impl_ops,
@@ -388,6 +391,13 @@ where
 pub type PhysRange = MemoryRange<PhysAddr>;
 /// A range of virtual memory.
 pub type VirtRange = MemoryRange<VirtAddr>;
+
+impl VirtRange {
+    /// A VirtRange encompassing the entire higher half
+    pub const HIGHER_HALF: VirtRange = VirtRange::new(VirtAddr::HIGHER_HALF_OFFSET, VirtAddr::MAX);
+    /// A VirtRange encompassing the entire lower half
+    pub const LOWER_HALF: VirtRange = VirtRange::new(VirtAddr::MIN, VirtAddr::HIGHER_HALF_OFFSET);
+}
 
 /// A direct mapping between a page and a frame.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
