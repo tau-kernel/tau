@@ -19,6 +19,9 @@ use crate::{
 pub struct HeaplessAllocator(MapFlags);
 
 impl HeaplessAllocator {
+    /// A `HeaplessAllocator` with the WRITABLE flag.
+    pub const WRITABLE: HeaplessAllocator = Self::new(MapFlags::WRITABLE);
+
     /// Creates a new `HeaplessAllocator` with the given `MapFlags`.
     pub const fn new(flags: MapFlags) -> Self {
         Self(flags)

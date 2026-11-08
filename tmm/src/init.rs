@@ -110,6 +110,7 @@ pub(crate) unsafe fn init_unchecked(
     asm::set_vmm(vmm);
     asm::set_pmm(pmm);
 
+    unsafe { crate::did_init() };
     info!("Memory manager initialized successfully");
     //Err(MemError::Uninit("todo"))
     Ok(())

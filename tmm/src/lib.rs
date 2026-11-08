@@ -17,6 +17,7 @@ use core::{
     alloc::Layout,
     fmt::{Debug, Display},
     mem,
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 extern crate alloc;
@@ -48,6 +49,7 @@ pub mod err;
 mod init;
 pub mod kernel_map;
 pub mod paging;
+pub mod region;
 
 pub use err::{ContextualizedError, MemError};
 /// The minimum size of the managed range required for the memory manager to function correctly.
@@ -349,6 +351,18 @@ pub unsafe fn free_phys_mapping(mapping: ProvidedMemoryMapping) -> Result<(), Co
     }
 
     Ok(())
+}
+static TMM_INIT: AtomicBool = AtomicBool::new(false);
+
+unsafe fn did_init() {
+    if TMM_INIT.swap(true, Ordering::SeqCst) {
+        panic!("tmm init multiple times")
+    }
+}
+
+/// Is TMM initialized?
+pub fn is_init() -> bool {
+    TMM_INIT.load(Ordering::SeqCst)
 }
 
 bitflags! {
