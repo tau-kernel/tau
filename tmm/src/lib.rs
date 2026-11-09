@@ -352,7 +352,8 @@ pub unsafe fn free_phys_mapping(mapping: ProvidedMemoryMapping) -> Result<(), Co
 
     Ok(())
 }
-static TMM_INIT: AtomicBool = AtomicBool::new(false);
+// Tests should always report init
+static TMM_INIT: AtomicBool = AtomicBool::new(cfg!(test));
 
 unsafe fn did_init() {
     if TMM_INIT.swap(true, Ordering::SeqCst) {

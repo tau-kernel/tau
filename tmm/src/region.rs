@@ -13,6 +13,12 @@ pub struct MemoryRegion {
     pub name: &'static str,
 }
 
+impl MemoryRegion {
+    /// Creates a new `MemoryRegion` with the given params.
+    pub fn new(range: VirtRange, name: &'static str) -> Self {
+        Self { range, name }
+    }
+}
 /// Represents a request for a memory region, including its name, size, and alignment
 #[derive(Debug, Clone, Copy)]
 pub struct RegionRequest {

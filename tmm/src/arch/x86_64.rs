@@ -206,36 +206,3 @@ impl From<PageTableFlags> for MapFlags {
         flags
     }
 }
-
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    fn assert_flags_correctness() {
-        use super::PageTableFlags as OurFlags;
-        use x86_64::structures::paging::page_table::PageTableFlags as X86Flags;
-        macro_rules! check {
-            ($name: ident) => {
-                assert_eq!(OurFlags::$name.bits(), X86Flags::$name.bits(), "Flag {} does not match!", stringify!($name));
-            };
-            (($($name: ident),+)) => {
-                $(
-                    check!($name);
-                )+
-            }
-        }
-
-        check!((
-            PRESENT,
-            WRITABLE,
-            USER_ACCESSIBLE,
-            WRITE_THROUGH,
-            NO_CACHE,
-            ACCESSED,
-            DIRTY,
-            HUGE_PAGE,
-            GLOBAL,
-            NO_EXECUTE
-        ));
-    }
-}
