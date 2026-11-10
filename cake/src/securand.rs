@@ -4,8 +4,9 @@ use core::hash::{BuildHasher, Hasher};
 
 use arrayvec::ArrayVec;
 use log::{error, info};
+use rand::RngExt;
 use rand_chacha::ChaCha20Rng;
-use rand_core::{Rng, SeedableRng};
+use rand_core::{Rng, SeedableRng, TryRng};
 use rs_sha512_256::{HasherContext, Sha512_256State};
 use spin::Mutex;
 
@@ -167,3 +168,29 @@ pub fn rng(buf: &mut [u8]) {
     let mut rng = RNG.get();
     rng.fill_bytes(buf);
 }
+
+/// TryRng Implementation for securand.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct SecuRng;
+
+impl TryRng for SecuRng {
+    type Error = core::convert::Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+        Ok(rng32())
+    }
+
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+        Ok(rng64())
+    }
+
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+        Ok(rng(dst))
+    }
+}
+
+const _: () = {
+    const fn is_rng<T: TryRng + Rng + RngExt>() {}
+
+    is_rng::<SecuRng>();
+};

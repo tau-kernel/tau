@@ -13,6 +13,7 @@ arrayvec = { version = "0.7.8", default-features = false }
 kelp = { path = "../kelp", default-features = false }
 rustc-demangle = { version = "0.1.24", default-features = false }
 rand_chacha = { version = "0.10.0", default-features = false }
+rand = { version = "0.10.3", default-features = false }
 rand_core = "0.10.1"
 rs_sha512_256 = "0.1.2"
 bytemuck = { version = "1.25.2", features = ["derive"] }

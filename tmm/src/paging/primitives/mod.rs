@@ -18,10 +18,7 @@ pub use paddr::PhysAddr;
 pub use page::Page;
 pub use vaddr::VirtAddr;
 
-use crate::{
-    align,
-    arch::L1_PAGE_SIZE,
-};
+use crate::{align, arch::L1_PAGE_SIZE};
 
 encapsulate_macro!(
     impl_ops,
@@ -384,6 +381,14 @@ where
         let start = A::try_new(align!(down, self.start.as_u64(), align.as_usize() as u64)).unwrap();
         let end = A::try_new(align!(up, self.end.as_u64(), align.as_usize() as u64)).unwrap();
         MemoryRange { start, end }
+    }
+
+    pub fn contains_address(&self, addr: A) -> bool {
+        self.start <= addr && addr < self.end
+    }
+
+    pub fn contains(&self, other: Self) -> bool {
+        self.contains_address(other.start()) && self.contains_address(other.end())
     }
 }
 

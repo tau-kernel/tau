@@ -41,6 +41,23 @@ impl<const INLINE_CAP: usize, A: Allocator> RegionBacking<INLINE_CAP, A> {
             Self::Vector(memory_regions) => memory_regions.push(element),
         }
     }
+
+    /// Inserts an element into the backing at the specified index, moving it to a vec if the capacity is overflowed.
+    pub fn insert(&mut self, index: usize, element: MemoryRegion)
+    where
+        A: Clone,
+    {
+        match self {
+            Self::Inline(av, alloc) => {
+                if let Err(_) = av.try_insert(index, element) {
+                    *self = Self::Vector(av.to_vec_in(alloc.clone()));
+                    self.insert(index, element);
+                }
+                return;
+            }
+            Self::Vector(memory_regions) => memory_regions.insert(index, element),
+        }
+    }
 }
 
 impl<const INLINE_CAP: usize, A: Allocator> Deref for RegionBacking<INLINE_CAP, A> {

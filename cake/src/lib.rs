@@ -26,6 +26,8 @@ pub use module::KernelModule;
 pub use oncemut::{OnceMutex, OnceMutexGuard};
 pub use oncerw::{OnceRwLock, OnceRwReadGuard, OnceRwWriteGuard};
 pub use owned::Owned;
+pub use rand;
+pub use rand_core::{Rng, SeedableRng, TryRng};
 pub use resource::{ResourceGuard, ResourceMutex};
 pub use securand::{add_entropy_source, init_rng, rng, rng32, rng64};
 pub use spin::lock_api::*;
