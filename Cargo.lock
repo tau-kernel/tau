@@ -1293,6 +1293,17 @@ dependencies = [
  "cfg-if",
  "pastey 0.2.1",
  "thiserror",
+ "tmm_proc",
+]
+
+[[package]]
+name = "tmm_proc"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rustix 1.1.5",
+ "syn 3.0.5",
 ]
 
 [[package]]

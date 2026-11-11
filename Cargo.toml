@@ -18,6 +18,7 @@ members = [
     "kelp",
     "tmm",
     "tmm/kalloc",
+    "tmm/tmm_proc",
 ]
 
 [build-dependencies]

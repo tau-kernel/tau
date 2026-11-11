@@ -220,15 +220,32 @@ unsafe fn find_set_recursive_entry() -> Option<PageTableIndex> {
 /// KERNEL_BINARY = Kernel binary memory
 ///
 /// HIGHER_HALF_START = Start of the higher half of the kernel memory
-use tmm::kernel_map;
+use tmm::memory_map;
 
-kernel_map! {
-    . = (higher_half + 512 GiB),
-    TMM_MANAGED_RANGE = 3 GiB; align 1 GiB,
-    TMM_ZERO_PAGE = Large; align Large,
-    KERNEL_HEAP = 16 MiB; align 2 MiB,
-    KERNEL_PHYS_MAP = 256 MiB; align 2 MiB,
-    KERNEL_REMAP = 256 MiB; align 2 MiB,
-    FRAMEBUFFER = 2 MiB; align 2 MiB,
-    ADDRESS_SPACE_INFO = 4 KiB; align 4 KiB,
+memory_map! {
+       SHM = {
+            name: "SHared Memory",
+            size: 1 L4,
+            align: 1 L4,
+        },
+        LOCAL_MANAGED = {
+            name: "Local Managed",
+            size: 8 GiB,
+            align: 2 GiB,
+        },
+        LOCAL_HEAP = {
+            name: "Local Heap",
+            size: 4 GiB,
+            align: 1 GiB,
+        },
+        SHM_HEAP = {
+            name: "SHared Memory Heap",
+            size: 4 GiB,
+            align: 1 GiB,
+        },
+        reserved KERNEL = {
+            name: "Kernel",
+            start: _KERNEL_START,
+            end: _KERNEL_END,
+        }
 }

@@ -11,6 +11,7 @@ thiserror = { version = "2.0.3", default-features = false }
 arrayvec = { version = "0.7.6", default-features = false }
 cfg-if = "1.0.4"
 pastey = "0.2.1"
+tmm_proc = { path = "tmm_proc" }
 
 [lints]
 workspace = true

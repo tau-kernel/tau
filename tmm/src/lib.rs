@@ -28,6 +28,8 @@ use cake::limine::memory_map;
 #[doc(hidden)]
 pub use pastey as _pastey;
 
+pub use tmm_proc::memory_map;
+
 use crate::{
     entry_walker::{EntrySource, EntryWalker},
     err::Contextualize,
@@ -47,7 +49,6 @@ pub mod corelocal;
 pub mod entry_walker;
 pub mod err;
 mod init;
-pub mod kernel_map;
 pub mod paging;
 pub mod region;
 
