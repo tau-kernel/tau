@@ -21,6 +21,7 @@ use tmm::{
         Address, AddressExt, MemoryFragment, MemoryRange, PageTable, PageTableEntry,
         PageTableIndex, VirtAddr, asm::InactiveAddressSpace, heapless::HeaplessAllocator,
     },
+    region::RegionManager,
 };
 
 /// Enables or disables allocation debugging based on the ALLOC_DEBUG environment variable.
@@ -223,26 +224,31 @@ unsafe fn find_set_recursive_entry() -> Option<PageTableIndex> {
 use tmm::memory_map;
 
 memory_map! {
+        /// Area of memory that is shared between all cores.
        SHM = {
             name: "SHared Memory",
             size: 1 L4,
             align: 1 L4,
         },
+        /// Local general purpose memory range
         LOCAL_MANAGED = {
             name: "Local Managed",
             size: 8 GiB,
             align: 2 GiB,
         },
+        /// Local heap area.
         LOCAL_HEAP = {
             name: "Local Heap",
             size: 4 GiB,
             align: 1 GiB,
         },
+        /// Heap memory shared between all cores.
         SHM_HEAP = {
             name: "SHared Memory Heap",
             size: 4 GiB,
             align: 1 GiB,
         },
+        // The kernel range.
         reserved KERNEL = {
             name: "Kernel",
             start: _KERNEL_START,

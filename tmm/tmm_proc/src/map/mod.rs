@@ -10,6 +10,10 @@ mod types;
 
 pub use types::*;
 
+struct RegionDef {}
+
+struct Region {}
+
 pub fn impl_kernel_map(kernel_map: KernelMap) -> syn::Result<TokenStream> {
     Ok(TokenStream::new())
 }

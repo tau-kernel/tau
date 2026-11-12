@@ -4,11 +4,12 @@ use std::collections::HashMap;
 use proc_macro2::Span;
 use syn::{
     parse::{Parse, Peek},
-    Ident, LitInt, LitStr, Path, Token,
+    punctuated::Punctuated,
+    Attribute, Ident, LitInt, LitStr, Meta, Path, Token,
 };
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct MemoryAmount {
+pub struct MemLit {
     value: u64,
 }
 
@@ -25,7 +26,7 @@ fn unit_multiplier(unit: &str) -> Option<u64> {
     }
 }
 
-impl Parse for MemoryAmount {
+impl Parse for MemLit {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let lit: syn::LitInt = input.parse()?;
         let multi = match input.parse::<Option<Ident>>()? {
@@ -40,7 +41,7 @@ impl Parse for MemoryAmount {
                 "Memory size overflowed when applying unit multiplier",
             )
         })?;
-        Ok(MemoryAmount { value })
+        Ok(MemLit { value })
     }
 }
 
@@ -48,22 +49,21 @@ pub type RegionFields = syn::punctuated::Punctuated<RegionField, Token![,]>;
 
 pub struct RegionField {
     name: Ident,
-    colon: Token![:],
     value: Value,
 }
 
 impl Parse for RegionField {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let name: Ident = input.parse()?;
-        let colon: Token![:] = input.parse()?;
+        input.parse::<Token![:]>()?;
         let value: Value = input.parse()?;
-        Ok(RegionField { name, colon, value })
+        Ok(RegionField { name, value })
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Memory {
-    Literal(MemoryAmount),
+    Literal(MemLit),
     Ident(Ident),
 }
 
@@ -76,7 +76,7 @@ pub enum Value {
 impl Parse for Value {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         if input.peek(syn::LitInt) {
-            let size: MemoryAmount = input.parse()?;
+            let size: MemLit = input.parse()?;
             Ok(Value::Size(Memory::Literal(size)))
         } else if input.peek(syn::LitStr) {
             let lit_str: LitStr = input.parse()?;
@@ -117,12 +117,12 @@ impl Parse for FieldReader {
 }
 
 impl FieldReader {
-    pub fn get_memory(&self, name: &str) -> Result<Memory, syn::Error> {
-        match self.fields.get(name) {
+    pub fn get_memory(&mut self, name: &str) -> Result<Memory, syn::Error> {
+        match self.fields.remove(name) {
             Some((v, span)) => match v {
                 Value::Size(mem) => Ok(mem.clone()),
                 _ => Err(syn::Error::new(
-                    *span,
+                    span,
                     format!("Field `{}` is not a memory size", name),
                 )),
             },
@@ -133,12 +133,12 @@ impl FieldReader {
         }
     }
 
-    pub fn get_string(&self, name: &str) -> Result<LitStr, syn::Error> {
-        match self.fields.get(name) {
+    pub fn get_string(&mut self, name: &str) -> Result<LitStr, syn::Error> {
+        match self.fields.remove(name) {
             Some((v, span)) => match v {
                 Value::Str(lit_str) => Ok(lit_str.clone()),
                 _ => Err(syn::Error::new(
-                    *span,
+                    span,
                     format!("Field `{}` is not a string literal", name),
                 )),
             },
@@ -148,147 +148,114 @@ impl FieldReader {
             )),
         }
     }
+
+    pub fn check_empty(&self) -> Result<(), syn::Error> {
+        let mut err: Result<(), syn::Error> = Ok(());
+        for (_, (_, span)) in &self.fields {
+            if let Err(err) = &mut err {
+                err.combine(syn::Error::new(*span, "Undefined field"));
+            } else {
+                err = Err(syn::Error::new(*span, "Undefined field"))
+            }
+        }
+        err
+    }
 }
 
-pub struct RegionRequest {
+#[derive(Clone)]
+pub struct RegionInfo {
+    attribs: Vec<Attribute>,
     ident: Ident,
     pretty_name: LitStr,
+    region: Region,
+}
+
+impl Debug for RegionInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RegionInfo")
+            .field("attribs", &self.attribs.len())
+            .field("ident", &self.ident)
+            .field("pretty_name", &self.pretty_name.value())
+            .field("region", &self.region)
+            .finish()
+    }
+}
+
+impl Parse for RegionInfo {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let attribs = input.call(Attribute::parse_outer)?;
+        let is_reserved = input.peek(kw::reserved);
+
+        if is_reserved {
+            input.parse::<kw::reserved>()?;
+        }
+
+        let name = input.parse::<Ident>()?;
+        input.parse::<Token![=]>()?;
+        let region;
+        syn::braced!(region in input);
+        let mut reader = region.parse::<FieldReader>()?;
+        let pretty_name = reader.get_string("name")?;
+        let region = Region::from_reader(reader, is_reserved)?;
+
+        Ok(Self {
+            attribs,
+            ident: name,
+            pretty_name,
+            region,
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum Region {
+    Request(RequestedRegion),
+    Reserved(ReservedRegion),
+}
+
+impl Region {
+    fn from_reader(mut reader: FieldReader, is_reserved: bool) -> Result<Self, syn::Error> {
+        if is_reserved {
+            let start = reader.get_memory("start")?;
+            let end = reader.get_memory("end")?;
+            reader.check_empty()?;
+            return Ok(Self::Reserved(ReservedRegion { start, end }));
+        }
+        let size = reader.get_memory("size")?;
+        let align = reader.get_memory("align")?;
+        reader.check_empty()?;
+        Ok(Self::Request(RequestedRegion { size, align }))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RequestedRegion {
     size: Memory,
     align: Memory,
 }
 
-impl Debug for RegionRequest {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RegionRequest")
-            .field("ident", &self.ident)
-            .field("pretty_name", &self.pretty_name.value())
-            .field("size", &self.size)
-            .field("align", &self.align)
-            .finish()
-    }
+mod kw {
+    syn::custom_keyword!(reserved);
 }
 
-impl Parse for RegionRequest {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let ident: Ident = input.parse()?;
-        input.parse::<Token![=]>()?;
-        let contents;
-        syn::braced!(contents in input);
-        let fields: FieldReader = contents.parse()?;
-
-        Ok(Self {
-            ident,
-            pretty_name: fields.get_string("name")?,
-            size: fields.get_memory("size")?,
-            align: fields.get_memory("align")?,
-        })
-    }
-}
-
-#[derive(Debug)]
-struct ReservedKeyword;
-
-impl ReservedKeyword {
-    fn peek(input: syn::parse::ParseStream) -> bool {
-        input.peek(Ident) && input.peek2(Ident)
-    }
-}
-
-impl Parse for ReservedKeyword {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let kw = input.parse::<Ident>()?;
-        println!("{:?}", input);
-        if kw == "reserved" {
-            if !input.peek(Ident) {
-                return Err(syn::Error::new(
-                    input.span(),
-                    "Expected an identifier after `reserved`",
-                ));
-            }
-            Ok(ReservedKeyword)
-        } else {
-            Err(syn::Error::new(
-                kw.span(),
-                "Expected the keyword `reserved`",
-            ))
-        }
-    }
-}
-
+#[derive(Debug, Clone)]
 pub struct ReservedRegion {
-    ident: Ident,
-    pretty_name: LitStr,
     start: Memory,
     end: Memory,
 }
-impl Debug for ReservedRegion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RegionRequest")
-            .field("ident", &self.ident)
-            .field("pretty_name", &self.pretty_name.value())
-            .field("start", &self.start)
-            .field("end", &self.end)
-            .finish()
-    }
-}
-impl Parse for ReservedRegion {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        input.parse::<ReservedKeyword>()?;
-        let name: Ident = input.parse()?;
-        input.parse::<Token![=]>()?;
-        let contents;
-        syn::braced!(contents in input);
-        let fields: FieldReader = contents.parse()?;
 
-        Ok(Self {
-            ident: name,
-            pretty_name: fields.get_string("name")?,
-            start: fields.get_memory("start")?,
-            end: fields.get_memory("end")?,
-        })
-    }
-}
-#[derive(Debug)]
-pub enum Region {
-    Request(RegionRequest),
-    Reserved(ReservedRegion),
-}
-
-impl Parse for Region {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        if ReservedKeyword::peek(input) {
-            let reserved_region: ReservedRegion = input.parse()?;
-            Ok(Region::Reserved(reserved_region))
-        } else {
-            let region_request: RegionRequest = input.parse()?;
-            Ok(Region::Request(region_request))
-        }
-    }
-}
-
-pub type Regions = syn::punctuated::Punctuated<Region, Token![,]>;
+type RegionInfoList = Punctuated<RegionInfo, Token![,]>;
 
 #[derive(Debug)]
 pub struct KernelMap {
-    requested_regions: Vec<RegionRequest>,
-    reserved_regions: Vec<ReservedRegion>,
+    regions: Vec<RegionInfo>,
 }
 
 impl Parse for KernelMap {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let regions = Regions::parse_terminated(input)?;
-        let mut requested = vec![];
-        let mut reserved = vec![];
-        for region in regions {
-            match region {
-                Region::Request(r) => requested.push(r),
-                Region::Reserved(r) => reserved.push(r),
-            }
-        }
-
-        Ok(KernelMap {
-            requested_regions: requested,
-            reserved_regions: reserved,
+        let regions = RegionInfoList::parse_terminated(input)?;
+        Ok(Self {
+            regions: regions.iter().cloned().collect(),
         })
     }
 }
@@ -301,45 +268,27 @@ mod tests {
     #[test]
     fn test_parse_memory_amount() {
         let input = "16 MiB";
-        let memory_amount: MemoryAmount = parse_str(input).unwrap();
+        let memory_amount: MemLit = parse_str(input).unwrap();
         assert_eq!(memory_amount.value, 16 * 1024 * 1024);
 
         let input = "1 GiB";
-        let memory_amount: MemoryAmount = parse_str(input).unwrap();
+        let memory_amount: MemLit = parse_str(input).unwrap();
         assert_eq!(memory_amount.value, 1024 * 1024 * 1024);
 
         let input = "512 KiB";
-        let memory_amount: MemoryAmount = parse_str(input).unwrap();
+        let memory_amount: MemLit = parse_str(input).unwrap();
         assert_eq!(memory_amount.value, 512 * 1024);
 
         let input = "4096 B";
-        let memory_amount: MemoryAmount = parse_str(input).unwrap();
+        let memory_amount: MemLit = parse_str(input).unwrap();
         assert_eq!(memory_amount.value, 4096);
     }
 
     #[test]
     fn test_parse_memory_amount_invalid_unit() {
         let input = "16 MB"; // Invalid unit
-        let result: Result<MemoryAmount, syn::Error> = parse_str(input);
+        let result: Result<MemLit, syn::Error> = parse_str(input);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_reserved_keyword() {
-        // Reserve is a little weird since it's somewhat context dependant-
-        // reserved is a valid region name, so it MUST check that there's an ident after.
-        let input = "reserved KERNEL";
-        struct Test;
-        impl Parse for Test {
-            fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-                input.parse::<ReservedKeyword>()?;
-                input.parse::<Ident>()?;
-                Ok(Test)
-            }
-        }
-        parse_str::<Test>(input).unwrap();
-        let bad = "reserved";
-        parse_str::<ReservedKeyword>(bad).unwrap_err();
     }
 
     #[test]
@@ -373,5 +322,16 @@ mod tests {
 
         let parse = parse_str::<KernelMap>(contents).unwrap();
         println!("{:?}", parse);
+    }
+
+    #[test]
+    fn test_parse_meta() {
+        let test = "/// test 1.
+        TEST_1 = { name: \"test1\",
+                    size: 1 L4,
+                    align: 1 L4,
+    }";
+        let parse = parse_str::<KernelMap>(test).unwrap();
+        println!("{:#?}", parse);
     }
 }
