@@ -20,8 +20,9 @@ use tmm::{
     paging::{
         Address, AddressExt, MemoryFragment, MemoryRange, PageTable, PageTableEntry,
         PageTableIndex, VirtAddr, asm::InactiveAddressSpace, heapless::HeaplessAllocator,
+        primitives::VirtRange,
     },
-    region::RegionManager,
+    region::{RegionBacking, RegionManager},
 };
 
 /// Enables or disables allocation debugging based on the ALLOC_DEBUG environment variable.
@@ -118,7 +119,7 @@ fn map_kernel(recursive_idx: PageTableIndex) -> Result<!, MemError> {
         kernel_range
     );
     builder.copy_mappings_from_base(kernel_range, None)?;
-    builder.copy_mappings_from_base(map::tmm_managed_range::RANGE, None)?;
+    //builder.copy_mappings_from_base(map::tmm_managed_range::RANGE, None)?;
 
     let new_as = builder
         .unmount()
@@ -149,16 +150,25 @@ unsafe fn init_tmm() -> Result<PageTableIndex, ContextualizedError> {
     let _memory_map = bootloader::memory_map();
     let recursive_idx = unsafe { find_set_recursive_entry().unwrap() };
 
-    let init = InitConfig::find_scratch_page(
-        recursive_idx,
-        map::tmm_managed_range::RANGE,
-        bootloader::memory_map(),
-    )
-    .with_ctx("failed to create config")?;
+    let mut regions: RegionManager<HeaplessAllocator, 0x20> = RegionManager::new(
+        VirtRange::HIGHER_HALF,
+        RegionBacking::inline(HeaplessAllocator::new(MapFlags::WRITABLE)),
+    );
 
-    info!("Initializing tmm {:?}", init);
-    unsafe { tmm::init(init) }?;
-    info!("Memory manager initialized");
+    memory_map::init_with_manager(&mut regions, &mut cake::securand::SecuRng);
+
+    // let init = InitConfig::find_scratch_page(
+    //     recursive_idx,
+    //     map::tmm_managed_range::RANGE,
+    //     bootloader::memory_map(),
+    // )
+    // .with_ctx("failed to create config")?;
+
+    // info!("Initializing tmm {:?}", init);
+    // unsafe { tmm::init(init) }?;
+    // info!("Memory manager initialized");
+
+    panic!();
 
     // Copy the kernel mappings into the managed range so it isn't lost when the kernel is remapped.
     let alloc = HeaplessAllocator::new(MapFlags::WRITABLE);
@@ -203,17 +213,6 @@ unsafe fn find_set_recursive_entry() -> Option<PageTableIndex> {
     None
 }
 
-/// Defines various memory map constants used by the kernel.
-///
-/// KERNEL_* = Kernel memory
-///
-/// KERNEL_HEAP_* = Kernel heap memory
-///
-/// KERNEL_PHYS_MAP_* = Kernel misc memory (e.g virtual/physical memory mapping)
-///
-/// KERNEL_BINARY = Kernel binary memory
-///
-/// HIGHER_HALF_START = Start of the higher half of the kernel memory
 use tmm::memory_map;
 unsafe extern "C" {
     #[link_name = "kernel_start"]
@@ -221,9 +220,6 @@ unsafe extern "C" {
     #[link_name = "kernel_end"]
     static KERNEL_END: u8;
 }
-
-static REAL_KERNEL_START: u64 = unsafe { &KERNEL_START as *const _ as usize as u64 };
-static REAL_KERNEL_END: u64 = unsafe { &KERNEL_END as *const _ as usize as u64 };
 
 memory_map! {
         /// Area of memory that is shared between all cores.
@@ -250,10 +246,4 @@ memory_map! {
             size: 4 GiB,
             align: 1 GiB,
         },
-        // The kernel range.
-        reserved KERNEL = {
-            name: "Kernel",
-            start: REAL_KERNEL_START,
-            end: REAL_KERNEL_END,
-        }
 }

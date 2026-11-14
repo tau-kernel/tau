@@ -6,10 +6,11 @@ use cake::{Rng, log::error, rand::RngExt, securand::SecuRng};
 use crate::{
     align,
     paging::{Address, VirtAddr, primitives::VirtRange},
-    region::backing::RegionBacking,
 };
 
 mod backing;
+
+pub use backing::RegionBacking;
 
 /// Represents a region of memory in the system.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -152,17 +153,18 @@ impl<A: Allocator + Clone, const INLINE_CAP: usize> RegionManager<A, INLINE_CAP>
 
     /// Commits the given memory region to the backing, ensuring that it does not overlap with any existing regions.
     pub fn commit(&mut self, region: MemoryRegion) {
-        self.backing
+        match self
+            .backing
             .binary_search_by_key(&region.range.start(), |r| r.range.start())
-            .map_or_else(
-                |_| {
-                    panic!(
-                        "Attempted to commit a region that overlaps with an existing region: {:?}",
-                        region
-                    )
-                },
-                |idx| self.backing.insert(idx, region),
-            );
+        {
+            Ok(idx) => {
+                panic!(
+                    "Found overlapping memory region! new: {:?}, old: {:?}",
+                    region, self.backing[idx]
+                )
+            }
+            Err(idx) => self.backing.insert(idx, region),
+        }
     }
 
     /// Fulfils the given range request and commits it to the backing.

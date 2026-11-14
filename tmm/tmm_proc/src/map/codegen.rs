@@ -85,6 +85,7 @@ impl<'a, 'b> ToTokens for ManagerInitStmt<'a, 'b> {
         tokens.extend(quote! {{
                 let mut val = Some(#manager.fulfill_and_commit(#rng, #request_path)
                     .expect(concat!("failed to fulfill kernel range ", #request_pretty_name)));
+                ::cake::log::info!(target: "memory_map", "mapped range {} to {:?}", #request_pretty_name, val);
                 #response_path.call_once(|| val.take().unwrap());
                 assert!(val.is_none(), "Response already init!");
         }});
@@ -127,8 +128,8 @@ impl ToTokens for ReservedConst {
 
         tokens.extend(quote! {
             const #const_name: MemoryRegion = MemoryRegion::new(
-                VirtRange::new(VirtAddr::new(#start), VirtAddr::new(#end))
-                #pretty_name,
+                VirtRange::new(VirtAddr::new(#start), VirtAddr::new(#end)),
+                #pretty_name
             );
         });
     }
