@@ -7,12 +7,20 @@ use crate::{
     },
 };
 
-use core::ops;
+use core::{fmt::Debug, ops};
 
 /// Virtual address type for the current architecture.
-#[derive(Clone, Copy, Hash, Debug)]
+#[derive(Clone, Copy, Hash)]
 #[derive_const(PartialEq, Eq, PartialOrd, Ord)]
 pub struct VirtAddr(u64);
+
+impl Debug for VirtAddr {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("VirtAddr")
+            .field(&format_args!("{:x}", self.0))
+            .finish()
+    }
+}
 
 impl_ops!(blanket VirtAddr);
 
