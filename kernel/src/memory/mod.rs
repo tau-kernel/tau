@@ -27,13 +27,6 @@ use tmm::{
 /// Enables or disables allocation debugging based on the ALLOC_DEBUG environment variable.
 pub const ALLOC_DEBUG: bool = option_env!("ALLOC_DEBUG").is_some();
 
-unsafe extern "C" {
-    #[link_name = "kernel_start"]
-    static KERNEL_START: u8;
-    #[link_name = "kernel_end"]
-    static KERNEL_END: u8;
-}
-
 /// Returns the memory range occupied by the kernel binary in virtual memory.
 pub fn kernel_range() -> MemoryRange<VirtAddr> {
     let start = unsafe { Address::new(&KERNEL_START as *const u8 as u64) };
@@ -222,6 +215,15 @@ unsafe fn find_set_recursive_entry() -> Option<PageTableIndex> {
 ///
 /// HIGHER_HALF_START = Start of the higher half of the kernel memory
 use tmm::memory_map;
+unsafe extern "C" {
+    #[link_name = "kernel_start"]
+    static KERNEL_START: u8;
+    #[link_name = "kernel_end"]
+    static KERNEL_END: u8;
+}
+
+static REAL_KERNEL_START: u64 = unsafe { &KERNEL_START as *const _ as usize as u64 };
+static REAL_KERNEL_END: u64 = unsafe { &KERNEL_END as *const _ as usize as u64 };
 
 memory_map! {
         /// Area of memory that is shared between all cores.
@@ -251,7 +253,7 @@ memory_map! {
         // The kernel range.
         reserved KERNEL = {
             name: "Kernel",
-            start: _KERNEL_START,
-            end: _KERNEL_END,
+            start: REAL_KERNEL_START,
+            end: REAL_KERNEL_END,
         }
 }

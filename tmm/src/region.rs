@@ -22,7 +22,7 @@ pub struct MemoryRegion {
 
 impl MemoryRegion {
     /// Creates a new `MemoryRegion` with the given params.
-    pub fn new(range: VirtRange, name: &'static str) -> Self {
+    pub const fn new(range: VirtRange, name: &'static str) -> Self {
         Self { range, name }
     }
 }

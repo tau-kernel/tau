@@ -1,19 +1,16 @@
 use std::collections::HashMap;
 
-use proc_macro::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use syn::{
-    braced, parse::Parse, punctuated::Punctuated, spanned::Spanned, token, Expr, Field, FieldValue,
-    Ident, LitStr,
+    braced, parse::Parse, punctuated::Punctuated, spanned::Spanned, token, Expr, ExprStruct, Field,
+    FieldValue, Ident, ItemFn, ItemStatic, ItemStruct, LitStr, Token, Visibility,
 };
 
-mod types;
+mod codegen;
+mod parse;
 
-pub use types::*;
-
-struct RegionDef {}
-
-struct Region {}
+pub use parse::*;
 
 pub fn impl_kernel_map(kernel_map: KernelMap) -> syn::Result<TokenStream> {
-    Ok(TokenStream::new())
+    Ok(codegen::impl_map(kernel_map))
 }
