@@ -6,17 +6,17 @@ use core::{
 
 use cake::{
     limine::memory_map::EntryType,
-    log::info,
+    log::{self, info},
     trace_disabled,
 };
 
 use crate::{
-    MapFlags, MemError, align,
+    ContextualizedError, MapFlags, MemError, align,
     bitmap::{
         Bitmap, BitmapBacking, VirtualMemoryManager,
         managers::{
-            address_as_bit_index, align_in_bits, bit_index_as_address,
-            entries_for_bytes, n_pages_for_bytes,
+            address_as_bit_index, align_in_bits, bit_index_as_address, entries_for_bytes,
+            n_pages_for_bytes,
         },
     },
     entry_walker::EntryWalker,
@@ -101,7 +101,9 @@ impl PhysicalMemoryManager {
                 used.base, used.length
             );
 
-            unsafe { pmm.mark_allocated(used.into()) };
+            if let Err(e) = unsafe { pmm.mark_allocated(used.into()) } {
+                log::error!("Failed to mark area as allocated: {}", e)
+            }
         }
 
         info!("entry_walker final state: {:#?}", entry_walker);
@@ -182,7 +184,10 @@ impl PhysicalMemoryManager {
             .find(|b| range.start() >= b.start && range.end() <= b.end())
     }
 
-    unsafe fn mark_allocated(&mut self, range: MemoryRange<PhysAddr>) {
+    unsafe fn mark_allocated(
+        &mut self,
+        range: MemoryRange<PhysAddr>,
+    ) -> Result<(), ContextualizedError> {
         if let Some(bmp) = self.bitmap_for_range(range) {
             info!("using bitmap for range: {:?} {:?}", bmp, range);
             let bitptr = address_as_bit_index(range.start(), bmp.start).expect(
@@ -197,9 +202,12 @@ impl PhysicalMemoryManager {
                 bmp.free.checked_sub(n_bits)
             );
             bmp.free -= n_bits;
-        } else {
-            panic!("address range is not within any managed physical memory range");
+            return Ok(());
         }
+        return Err(ContextualizedError::new(
+            MemError::UnmanagedPhysical(range.start()),
+            "unable to find bitmap for address",
+        ));
     }
 
     unsafe fn mark_unallocated(&mut self, range: MemoryRange<PhysAddr>) {

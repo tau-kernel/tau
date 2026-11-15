@@ -1,7 +1,9 @@
+use std::sync::Arc;
+
 use crate::map::{parse, Memory, Region, RegionInfo};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use syn::{Ident, LitStr};
+use syn::{Attribute, Ident, LitStr};
 
 #[derive(Clone, Debug)]
 struct ResponseStatic {
@@ -137,6 +139,7 @@ impl ToTokens for ReservedConst {
 
 struct Request {
     module: Ident,
+    attribs: Vec<Attribute>,
     request_const: RequestConst,
     response_static: ResponseStatic,
 }
@@ -146,6 +149,7 @@ impl Request {
         let lowercase = Ident::new(&info.ident.to_string().to_lowercase(), info.ident.span());
         Self {
             module: lowercase,
+            attribs: info.attribs.clone(),
             request_const: RequestConst {
                 const_name: format_ident!("{}_REQUEST", &info.ident),
                 pretty_name: info.pretty_name.clone(),
@@ -160,6 +164,7 @@ impl Request {
 
     fn module(&self, ts: &mut TokenStream) {
         let Request {
+            attribs,
             module,
             request_const,
             response_static,
@@ -193,9 +198,11 @@ impl Request {
             self.module.span(),
         );
         let response = &self.response_static.name;
+        let attribs = &self.attribs;
         let module = &self.module;
         let resp_path = quote! {#module::#response};
         ts.extend(quote! {
+            #(#attribs)*
             pub fn #getter_fn() -> &'static MemoryRegion {
                 #resp_path.get().expect(concat!(stringify!(#getter_fn), ": Failed to get region, is it uninit?"))
             }
@@ -252,6 +259,7 @@ impl ToTokens for MemoryMap {
         }
 
         tokens.extend(quote! {
+            /// The memory map for the kernel.
             pub mod memory_map {
                 use ::cake::Once;
                 use ::alloc::alloc::Allocator;
@@ -261,6 +269,7 @@ impl ToTokens for MemoryMap {
 
             #reservation_consts
 
+            /// Inits all of the regions with the given region manager.
             pub fn init_with_manager<A: Allocator + Clone, R: ::cake::rand::Rng, const INLINE_CAP: usize>
                     (#builder_ident: &mut ::tmm::region::RegionManager<A, INLINE_CAP>, rng: &mut R) {
                         #reservation_stmts

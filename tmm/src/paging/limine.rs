@@ -39,3 +39,9 @@ fn fmt_entry_type(entry_type: EntryType) -> &'static str {
         _ => "unknown",
     }
 }
+
+/// Converts the given slice of entries into our entry type.
+pub fn convert_limine_slice<'a>(src: &'a [cake::limine::memory_map::Entry]) -> &'a [LimineEntry] {
+    // SAFETY: The layout of both types are the exact same.
+    unsafe { core::slice::from_raw_parts(src.as_ptr().cast(), src.len()) }
+}

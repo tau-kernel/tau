@@ -20,6 +20,8 @@ pub use table::{PageTable, PageTableEntry};
 use cake::log::trace;
 pub use index::PageTableIndex;
 
+pub use limine::convert_limine_slice;
+
 use crate::{
     MapFlags, MapSource, MemError, MemoryMapping, ProvidedMemoryMapping,
     arch::{Mapper, PageEntryType},

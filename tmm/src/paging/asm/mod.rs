@@ -176,6 +176,7 @@ pub unsafe fn prepare_inactive_space(
 
     unsafe { set_active(new_space)? };
     if space.is_bootstrap {
+        mem::forget(space);
         return Ok(l4_frame);
     }
 

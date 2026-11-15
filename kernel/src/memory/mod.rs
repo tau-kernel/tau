@@ -18,9 +18,9 @@ use tmm::{
     ContextualizedError, InitConfig, MapFlags, MapSource, MemError,
     err::Contextualize,
     paging::{
-        Address, AddressExt, MemoryFragment, MemoryRange, PageTable, PageTableEntry,
-        PageTableIndex, VirtAddr, asm::InactiveAddressSpace, heapless::HeaplessAllocator,
-        primitives::VirtRange,
+        Address, AddressExt, MemoryFragment, MemoryRange, Page, PageTable, PageTableEntry,
+        PageTableIndex, VirtAddr, asm::InactiveAddressSpace, convert_limine_slice,
+        heapless::HeaplessAllocator, primitives::VirtRange,
     },
     region::{RegionBacking, RegionManager},
 };
@@ -157,18 +157,16 @@ unsafe fn init_tmm() -> Result<PageTableIndex, ContextualizedError> {
 
     memory_map::init_with_manager(&mut regions, &mut cake::securand::SecuRng);
 
-    // let init = InitConfig::find_scratch_page(
-    //     recursive_idx,
-    //     map::tmm_managed_range::RANGE,
-    //     bootloader::memory_map(),
-    // )
-    // .with_ctx("failed to create config")?;
+    let init = InitConfig {
+        recursive_idx,
+        managed_range: memory_map::get_local_managed().range,
+        zero_page: Page::from_start_address(memory_map::get_scratch().range.start()).unwrap(),
+        memory_map: convert_limine_slice(bootloader::memory_map()),
+    };
 
-    // info!("Initializing tmm {:?}", init);
-    // unsafe { tmm::init(init) }?;
-    // info!("Memory manager initialized");
-
-    panic!();
+    info!("Initializing tmm {:?}", init);
+    unsafe { tmm::init(init) }?;
+    info!("Memory manager initialized");
 
     // Copy the kernel mappings into the managed range so it isn't lost when the kernel is remapped.
     let alloc = HeaplessAllocator::new(MapFlags::WRITABLE);
@@ -246,4 +244,10 @@ memory_map! {
             size: 4 GiB,
             align: 1 GiB,
         },
+        /// The core local scratch page
+        SCRATCH = {
+            name: "Scratch page",
+            size: 1 L3,
+            align: 1 L3,
+        }
 }
