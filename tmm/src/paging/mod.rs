@@ -123,6 +123,7 @@ where
     unsafe { mapper.unmap_primitive(dst) }
 }
 
+/// Maps the given memory range in the current address space using the given params.
 pub(crate) unsafe fn map_from<P>(
     range: MemoryRange<VirtAddr>,
     flags: MapFlags,

@@ -101,9 +101,10 @@ impl PhysicalMemoryManager {
                 used.base, used.length
             );
 
-            if let Err(e) = unsafe { pmm.mark_allocated(used.into()) } {
-                log::error!("Failed to mark area as allocated: {}", e)
-            }
+            // Since bitmaps get rounded to fulfill nicer alignments, the used region may not be managed.
+            // This of course has some issues, mainly with wasting a little bit of physical memory, but it works out in our case since
+            // it's impossible for the memory to be allocated.
+            let _ = unsafe { pmm.mark_allocated(used.into()) };
         }
 
         info!("entry_walker final state: {:#?}", entry_walker);

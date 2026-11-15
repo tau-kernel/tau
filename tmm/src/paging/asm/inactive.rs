@@ -1,10 +1,9 @@
-use cake::log::error;
+use cake::{log::error, stacktrace};
 
 use crate::{
     MemError,
     paging::{
-        Frame, Large, Page, PageTableIndex,
-        RecursiveEntryManager, Small,
+        Frame, Large, Page, PageTableIndex, RecursiveEntryManager, Small,
         asm::{self, mounted},
     },
 };
@@ -72,10 +71,12 @@ impl InactiveAddressSpace {
 }
 
 impl Drop for InactiveAddressSpace {
+    #[track_caller]
     fn drop(&mut self) {
         if self.is_bootstrap {
             error!(
-                "Dropping InactiveAddressSpace during bootstrap phase. This is likely a bug, as the bootstrap address space should not be dropped."
+                "Dropping InactiveAddressSpace during bootstrap phase. This is likely a bug, as the bootstrap address space should not be dropped. {}",
+                stacktrace::collect_stacktrace::<8>()
             );
             return;
         }
