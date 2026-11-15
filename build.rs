@@ -3,6 +3,7 @@ use std::{fs, path::PathBuf};
 use kbuild::config::Config;
 
 fn main() {
+    let _ = fs::remove_file("target/trace_targets.txt");
     let kernel_dir = std::env::var("CARGO_BIN_FILE_KERNEL").expect("CARGO_BIN_FILE_KERNEL not set");
     let dbg_mode = std::env::var("DEBUG").is_ok();
 

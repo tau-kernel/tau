@@ -119,7 +119,7 @@ fn map_kernel(recursive_idx: PageTableIndex) -> Result<!, MemError> {
         kernel_range
     );
     builder.copy_mappings_from_base(kernel_range, None)?;
-    //builder.copy_mappings_from_base(map::tmm_managed_range::RANGE, None)?;
+    builder.copy_mappings_from_base(memory_map::get_local_managed().range, None)?;
 
     let new_as = builder
         .unmount()

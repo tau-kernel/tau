@@ -33,8 +33,7 @@ fn add_trace_target(expr: &LitStr) -> std::io::Result<()> {
 
     let mut list = std::fs::OpenOptions::new()
         .read(true)
-        .write(true)
-        .create(true)
+        .append(true)
         .open("target/trace_targets.txt")?;
 
     rustix::fs::flock(&list, FlockOperation::LockExclusive)?;
